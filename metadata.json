@@ -1,0 +1,5 @@
+{
+  "name": "Photo Model Prompt Generator",
+  "description": "An AI-powered application to generate detailed and creative prompts for photo model shoots. Select pose style, lighting, and aspect ratio to create the perfect prompt for your AI image generator.",
+  "requestFramePermissions": []
+}
