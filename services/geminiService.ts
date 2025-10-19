@@ -1,18 +1,16 @@
 import { GoogleGenAI } from "@google/genai";
 
-// Fungsi ini sekarang menerima apiKey opsional.
-// Ini akan membuat klien baru untuk setiap permintaan.
+// Fungsi ini disederhanakan dan tidak lagi menerima apiKey opsional.
 export async function generatePrompt(
     pose: string, 
     lighting: string, 
     aspectRatio: string,
-    userApiKey: string | null
 ): Promise<string> {
 
-    const apiKey = userApiKey || process.env.API_KEY;
+    const apiKey = process.env.API_KEY;
 
     if (!apiKey) {
-        throw new Error("API_KEY is not configured. Please set it in the settings or as an environment variable.");
+        throw new Error("API_KEY is not configured. Please set it as an environment variable.");
     }
 
     const ai = new GoogleGenAI({ apiKey });
@@ -50,7 +48,7 @@ export async function generatePrompt(
         if (error instanceof Error) {
             // Memberikan pesan error yang lebih ramah pengguna untuk masalah API key umum.
             if (error.message.includes('API key not valid')) {
-                 throw new Error(`Failed to generate prompt: The provided API key is not valid. Please check it in the settings.`);
+                 throw new Error(`Failed to generate prompt: The provided API key is not valid. Please check your environment variable.`);
             }
             throw new Error(`Failed to generate prompt: ${error.message}`);
         }

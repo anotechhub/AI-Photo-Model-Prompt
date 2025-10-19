@@ -1,13 +1,10 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { POSE_STYLES, LIGHTING_STYLES, ASPECT_RATIOS } from './constants';
 import { generatePrompt } from './services/geminiService';
 import Header from './components/Header';
 import Selector from './components/Selector';
 import PromptDisplay from './components/PromptDisplay';
 import LoadingSpinner from './components/LoadingSpinner';
-import SettingsModal from './components/SettingsModal';
-
-const API_KEY_STORAGE_KEY = 'gemini_api_key';
 
 const App: React.FC = () => {
   const [pose, setPose] = useState<string>(POSE_STYLES[0].value);
@@ -16,44 +13,15 @@ const App: React.FC = () => {
   const [generatedPrompt, setGeneratedPrompt] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-
-  // State Pengaturan
-  const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
-  const [apiKey, setApiKey] = useState<string>('');
-  const [tempApiKey, setTempApiKey] = useState<string>(''); // Untuk input di modal
-
-  // Memuat API key dari localStorage pada render awal
-  useEffect(() => {
-    const storedApiKey = localStorage.getItem(API_KEY_STORAGE_KEY);
-    if (storedApiKey) {
-      setApiKey(storedApiKey);
-      setTempApiKey(storedApiKey);
-    }
-  }, []);
   
-  const handleOpenSettings = () => {
-    setTempApiKey(apiKey); // Reset temp key ke kunci yang tersimpan saat ini
-    setIsSettingsOpen(true);
-  };
-  
-  const handleCloseSettings = () => {
-    setIsSettingsOpen(false);
-  };
-
-  const handleSaveSettings = () => {
-    setApiKey(tempApiKey);
-    localStorage.setItem(API_KEY_STORAGE_KEY, tempApiKey);
-    setIsSettingsOpen(false);
-  };
-
   const handleGeneratePrompt = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     setGeneratedPrompt('');
 
     try {
-      // Melewatkan API key pengguna (atau null jika kosong) ke service
-      const prompt = await generatePrompt(pose, lighting, aspectRatio, apiKey || null);
+      // Tidak lagi melewatkan API key, service akan menggunakan environment variable
+      const prompt = await generatePrompt(pose, lighting, aspectRatio);
       setGeneratedPrompt(prompt);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unexpected error occurred.');
@@ -61,11 +29,11 @@ const App: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [pose, lighting, aspectRatio, apiKey]);
+  }, [pose, lighting, aspectRatio]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 to-gray-900 text-gray-200 font-sans">
-      <Header onOpenSettings={handleOpenSettings} />
+      <Header />
       <main className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl shadow-2xl shadow-indigo-500/10 p-6 md:p-10 border border-slate-700">
           <p className="text-lg text-gray-400 mb-8 text-center">
@@ -123,14 +91,6 @@ const App: React.FC = () => {
           </div>
         )}
       </main>
-      
-      <SettingsModal
-        isOpen={isSettingsOpen}
-        onClose={handleCloseSettings}
-        onSave={handleSaveSettings}
-        apiKey={tempApiKey}
-        setApiKey={setTempApiKey}
-      />
       
       <footer className="text-center py-4 text-slate-500 text-sm">
         <p>Powered by Gemini API</p>
